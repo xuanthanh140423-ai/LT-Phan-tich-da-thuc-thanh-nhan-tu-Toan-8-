@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trò chơi Lật Thẻ Đa Thức AI</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+    <!-- Google Fonts: Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            /* Hình nền chấm bi dễ thương */
+            background-color: #fffaf0;
+            background-image: radial-gradient(#ffd1dc 2px, transparent 2px);
+            background-size: 24px 24px;
+            overscroll-behavior-y: contain; /* Ngăn kéo tải lại trang trên điện thoại */
+        }
+        
+        /* Nút bấm 3D dễ thương */
+        .btn-3d {
+            transition: all 0.1s;
+            position: relative;
+            top: 0;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .btn-3d:active {
+            top: 4px;
+            box-shadow: 0 0px 0 0 transparent !important;
+        }
+
+        /* Thẻ bài */
+        .scene {
+            perspective: 1000px;
+        }
+        .card {
+            width: 100%;
+            height: 85px; /* Chiều cao tối ưu cho màn hình di động */
+            position: relative;
+            transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        @media (min-width: 375px) {
+            .card {
+                height: 98px; /* Màn hình trung bình */
+            }
+        }
+        @media (min-width: 768px) {
+            .card {
+                height: 135px; /* Chiều cao cho máy tính/máy tính bảng */
+            }
+        }
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card__face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            padding: 0.2rem;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+            border: 2px solid white;
+        }
+        @media (min-width: 768px) {
+            .card__face {
+                border-radius: 1.25rem;
+                font-size: 1.25rem;
+                padding: 0.5rem;
+                box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+                border: 4px solid white;
+            }
+        }
+
+        .card__face--front {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            color: white;
+            font-weight: 900;
+            font-size: 1.8rem;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+        }
+        @media (min-width: 768px) {
+            .card__face--front {
+                font-size: 3.5rem;
+            }
+        }
+        .card__face--front::after {
+            content: '🔍';
+        }
+        .card:hover .card__face--front {
+            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+            transform: translateY(-2px);
+            transition: all 0.2s ease;
+        }
+        .card__face--back {
+            background: #ffffff;
+            color: #4338ca;
+            transform: rotateY(180deg);
+            border-color: #fbc2eb;
+            overflow: hidden; /* Chống cuộn tràn công thức */
+        }
+
+        .card.matched .card__face--back {
+            background: #dcfce7; 
+            border-color: #22c55e;
+            color: #14532d;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+        }
+
+        /* Animation lật sai */
+        @keyframes wiggle {
+            0%, 100% { transform: rotateY(180deg) rotate(0deg); }
+            25% { transform: rotateY(180deg) rotate(-5deg); }
+            75% { transform: rotateY(180deg) rotate(5deg); }
+        }
+        .wiggle {
+            animation: wiggle 0.4s ease-in-out;
+        }
+
+        /* Animation lật đúng */
+        @keyframes pop {
+            0% { transform: rotateY(180deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.08); }
+            100% { transform: rotateY(180deg) scale(1); }
+        }
+        .pop {
+            animation: pop 0.4s ease-out;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Tối ưu hóa kích thước chữ cho KaTeX khi lật thẻ */
+        .katex {
+            font-size: 0.9em !important; 
+            white-space: nowrap;
+            transition: transform 0.2s ease-out;
+        }
+        @media (min-width: 375px) {
+            .katex {
+                font-size: 0.95em !important;
+            }
+        }
+        @media (min-width: 768px) {
+            .katex {
+                font-size: 1.15em !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-2 md:py-8 relative overflow-x-hidden select-none">
+
+    <!-- Toast Notifications thiết kế gọn gàng cho Mobile -->
+    <div id="toast-container" class="fixed top-2 md:top-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 z-50 flex flex-col gap-1.5 pointer-events-none w-[90%] md:w-auto"></div>
+
+    <!-- Màn hình Nhập thông tin và cấu hình luật chơi -->
+    <div id="welcome-screen" class="w-full max-w-md px-4 mt-2 md:mt-10">
+        <div class="bg-white p-5 md:p-8 rounded-[2rem] shadow-2xl border-4 border-pink-100">
+            <div class="text-center">
+                <div class="text-4xl md:text-6xl mb-1 md:mb-4">🦉✨</div>
+                <h2 class="text-xl md:text-3xl font-black text-pink-500 mb-3 md:mb-6 uppercase tracking-wide">Thử Thách<br>Lật Thẻ Đa Thức</h2>
+            </div>
+            
+            <form id="player-form" onsubmit="startGameFlow(event)">
+                <div class="mb-3 text-left">
+                    <label for="player-name" class="block text-gray-700 font-extrabold mb-1 text-sm md:text-lg">👩‍🎓 Tên của bạn:</label>
+                    <input type="text" id="player-name" required class="w-full px-4 py-3 rounded-2xl border-4 border-gray-200 focus:border-pink-400 focus:outline-none transition-colors font-bold text-base text-gray-700 bg-gray-50" placeholder="Nhập tên của bạn...">
+                </div>
+                <div class="mb-4 text-left">
+                    <label for="player-class" class="block text-gray-700 font-extrabold mb-1 text-sm md:text-lg">🏫 Lớp:</label>
+                    <input type="text" id="player-class" required class="w-full px-4 py-3 rounded-2xl border-4 border-gray-200 focus:border-pink-400 focus:outline-none transition-colors font-bold text-base text-gray-700 bg-gray-50" placeholder="Ví dụ: 8A1">
+                </div>
+
+                <!-- Thông báo Chế độ Chơi Liên Tục -->
+                <div class="mb-5 text-left">
+                    <div class="p-4 rounded-2xl border-4 border-pink-100 bg-pink-50/50">
+                        <p class="font-extrabold text-pink-700 text-sm md:text-base mb-1">🎮 Hành trình Chinh Phục Đa Thức:</p>
+                        <p class="text-xs text-gray-600 font-bold leading-relaxed mb-2">
+                            Bạn sẽ có tối đa <span class="text-pink-600 font-black">5 phút</span> để lần lượt vượt qua 3 cấp độ thử thách tăng dần từ dễ đến khó:
+                        </p>
+                        <ul class="text-xs text-gray-600 font-bold space-y-1.5">
+                            <li class="flex items-center gap-1.5">🟢 <span class="text-green-600 font-black">Level 1:</span> 4 cặp thẻ Dễ (Rút nhân tử đơn giản)</li>
+                            <li class="flex items-center gap-1.5">🟡 <span class="text-yellow-600 font-black">Level 2:</span> 4 cặp thẻ Vừa (Hằng đẳng thức bậc hai)</li>
+                            <li class="flex items-center gap-1.5">🔴 <span class="text-red-600 font-black">Level 3:</span> 4 cặp thẻ Khó (Tách hạng tử và nhân tử nâng cao)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col gap-3 mt-3">
+                    <button type="submit" class="btn-3d w-full bg-cyan-400 hover:bg-cyan-500 text-white font-black py-3 md:py-4 px-6 rounded-2xl text-base md:text-xl uppercase tracking-wide" style="box-shadow: 0 5px 0 #06b6d4;">
+                        🚀 Vào Chinh Phục Ngay
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Màn hình Game -->
+    <div id="game-screen" class="max-w-4xl w-full px-2.5 hidden">
+        <!-- Header tinh gọn -->
+        <div class="text-center mb-2 md:mb-5">
+            <h1 class="text-xl md:text-4xl font-black text-pink-500 mb-1 md:mb-3 drop-shadow-sm">🎮 Truy Tìm Nhân Tử 🧩</h1>
+            
+            <div class="text-xs md:text-lg font-bold text-cyan-800 bg-cyan-100 border-2 border-white inline-block px-3.5 py-0.5 md:py-1 rounded-full mb-2 shadow-sm transform rotate-1">
+                🧑‍🎓 <span id="display-name"></span> &nbsp;|&nbsp; 🏫 <span id="display-class"></span>
+            </div>
+            
+            <!-- Bảng chỉ số ngang tối giản trên Mobile -->
+            <div class="flex justify-center gap-1.5 md:gap-4 text-xs md:text-xl font-extrabold text-gray-700">
+                <div class="bg-white py-1 px-3 md:py-2 md:px-6 rounded-xl md:rounded-2xl shadow-sm border-2 border-pink-200 text-pink-500 flex items-center">
+                    🔥&nbsp;<span id="level-indicator">Level 1/3</span>
+                </div>
+                <div class="bg-white py-1 px-3 md:py-2 md:px-6 rounded-xl md:rounded-2xl shadow-sm border-2 border-green-200 text-green-600 flex items-center">
+                    🎯&nbsp;<span id="matches">0/12</span>
+                </div>
+                <div class="bg-white py-1 px-3 md:py-2 md:px-6 rounded-xl md:rounded-2xl shadow-sm border-2 border-indigo-200 text-indigo-600 flex items-center">
+                    👆&nbsp;<span id="moves">0</span>
+                </div>
+                <div class="bg-white py-1 px-3 md:py-2 md:px-6 rounded-xl md:rounded-2xl shadow-sm border-2 border-cyan-200 text-cyan-600 flex items-center">
+                    ⏳&nbsp;<span id="time">05:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng Game (8 quân bài: 2 cột x 4 hàng tinh gọn trên Mobile, 4 cột x 2 hàng trên Desktop) -->
+        <div id="game-board" class="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-5 pb-6">
+            <!-- Thẻ bài sinh bởi JavaScript -->
+        </div>
+    </div>
+
+    <!-- Modal Chiến Thắng / Thua thích ứng kích thước -->
+    <div id="win-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-opacity duration-300">
+        <div class="bg-white p-5 md:p-10 rounded-[2rem] shadow-2xl text-center max-w-sm w-[90%] mx-4 border-4 border-pink-300 relative transform transition-transform duration-300 scale-100">
+            <div id="modal-emoji" class="absolute -top-9 left-1/2 transform -translate-x-1/2 text-4xl md:text-7xl bg-white rounded-full p-2 border-4 border-pink-300 shadow-lg">🏆</div>
+            
+            <h2 id="modal-title" class="text-2xl md:text-4xl font-black text-green-500 mt-4 md:mt-6 mb-1 md:mb-4">Tuyệt Vời!</h2>
+            <p id="modal-desc" class="text-gray-600 text-sm md:text-xl font-bold mb-3">Bạn đã lật mở thành công thử thách!</p>
+            
+            <div class="bg-gray-50 rounded-xl md:rounded-2xl p-3 mb-4 border-2 border-dashed border-gray-300">
+                <p class="font-black text-indigo-700 text-base md:text-xl mb-1.5" id="modal-player-info"></p>
+                <p class="font-black text-gray-500 text-xs md:text-base mb-1.5">Tiến trình: <span class="text-pink-500">Vượt qua 3 Cấp độ Thử Thách</span></p>
+                <div class="grid grid-cols-2 gap-1.5 text-sm md:text-lg font-bold">
+                    <div class="text-green-600">🎯 Tìm đúng: <span id="final-matches">0/12</span></div>
+                    <div class="text-indigo-600">👆 Lượt lật: <span id="final-moves">0</span></div>
+                </div>
+                <div class="mt-1.5 text-pink-500 text-sm md:text-lg font-bold">⏳ Dư: <span id="final-time">00:00</span></div>
+            </div>
+            
+            <div class="flex flex-col gap-2">
+                <button onclick="restartGame()" class="btn-3d w-full bg-cyan-400 hover:bg-cyan-500 text-white font-black py-2.5 rounded-xl md:rounded-2xl text-base md:text-xl" style="box-shadow: 0 4px 0 #06b6d4;">
+                    🔄 Chơi Lượt Mới
+                </button>
+                <button onclick="changePlayer()" class="w-full text-gray-500 hover:text-gray-800 font-bold py-1.5 mt-0.5 underline text-xs md:text-base">
+                    👋 Đổi người chơi / Thoát
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Ngân hàng 40 bài toán đa thức phân cấp từ dễ tới khó
+        const mathPairsPool = [
+            // Cấp độ: DỄ (15 bộ)
+            { id: 1, level: "easy", tex1: "3x + 3y", tex2: "3(x + y)" },
+            { id: 2, level: "easy", tex1: "x^2 - x", tex2: "x(x - 1)" },
+            { id: 3, level: "easy", tex1: "x^2 - 4", tex2: "(x - 2)(x + 2)" },
+            { id: 4, level: "easy", tex1: "x^2 - 2x + 1", tex2: "(x - 1)^2" },
+            { id: 5, level: "easy", tex1: "x^2 + 2x + 1", tex2: "(x + 1)^2" },
+            { id: 6, level: "easy", tex1: "x^2 - y^2", tex2: "(x - y)(x + y)" },
+            { id: 7, level: "easy", tex1: "5x^2 - 5x", tex2: "5x(x - 1)" },
+            { id: 8, level: "easy", tex1: "x^2 - 9", tex2: "(x - 3)(x + 3)" },
+            { id: 9, level: "easy", tex1: "x^2 - 6x + 9", tex2: "(x - 3)^2" },
+            { id: 10, level: "easy", tex1: "2x - 4", tex2: "2(x - 2)" },
+            { id: 11, level: "easy", tex1: "x^2 + 4x + 4", tex2: "(x + 2)^2" },
+            { id: 12, level: "easy", tex1: "x^2 - 16", tex2: "(x - 4)(x + 4)" },
+            { id: 13, level: "easy", tex1: "7x + 7", tex2: "7(x + 1)" },
+            { id: 14, level: "easy", tex1: "ax + ay", tex2: "a(x + y)" },
+            { id: 15, level: "easy", tex1: "x^2 + 6x + 9", tex2: "(x + 3)^2" },
+
+            // Cấp độ: TRUNG BÌNH (15 bộ)
+            { id: 16, level: "medium", tex1: "x^2 + 5x + 6", tex2: "(x + 2)(x + 3)" },
+            { id: 17, level: "medium", tex1: "x^2 - 5x + 4", tex2: "(x - 1)(x - 4)" },
+            { id: 18, level: "medium", tex1: "x^2 - xy - 2y + 2x", tex2: "(x + 2)(x - y)" },
+            { id: 19, level: "medium", tex1: "x^2 - 4xy + 4y^2", tex2: "(x - 2y)^2" },
+            { id: 20, level: "medium", tex1: "3x^2 - 12", tex2: "3(x - 2)(x + 2)" },
+            { id: 21, level: "medium", tex1: "x^3 - 8", tex2: "(x - 2)(x^2 + 2x + 4)" },
+            { id: 22, level: "medium", tex1: "x^3 + 1", tex2: "(x + 1)(x^2 - x + 1)" },
+            { id: 23, level: "medium", tex1: "x^2 - 7x + 12", tex2: "(x - 3)(x - 4)" },
+            { id: 24, level: "medium", tex1: "2x^2 - 2y^2", tex2: "2(x - y)(x + y)" },
+            { id: 25, level: "medium", tex1: "x^2 - 3x", tex2: "x(x - 3)" },
+            { id: 26, level: "medium", tex1: "x^2 + 3x + 2", tex2: "(x + 1)(x + 2)" },
+            { id: 27, level: "medium", tex1: "x^2 - 2x - 3", tex2: "(x + 1)(x - 3)" },
+            { id: 28, level: "medium", tex1: "x^2 - 4y^2", tex2: "(x - 2y)(x + 2y)" },
+            { id: 29, level: "medium", tex1: "x(x - 5) - x + 5", tex2: "(x - 1)(x - 5)" },
+            { id: 30, level: "medium", tex1: "x^2 - y^2 + 2x + 2y", tex2: "(x + y)(x - y + 2)" },
+
+            // Cấp độ: KHÓ (10 bộ)
+            { id: 31, level: "hard", tex1: "x^3 - 3x^2 + 3x - 1", tex2: "(x - 1)^3" },
+            { id: 32, level: "hard", tex1: "x^3 + 3x^2 + 3x + 1", tex2: "(x + 1)^3" },
+            { id: 33, level: "hard", tex1: "x^2 - 2xy + y^2 - 9", tex2: "(x - y - 3)(x - y + 3)" },
+            { id: 34, level: "hard", tex1: "x^4 - 13x^2 + 36", tex2: "(x - 2)(x + 2)(x - 3)(x + 3)" },
+            { id: 35, level: "hard", tex1: "2x^2 + 5x + 2", tex2: "(2x + 1)(x + 2)" },
+            { id: 36, level: "hard", tex1: "3x^2 - 8x + 4", tex2: "(3x - 2)(x - 2)" },
+            { id: 37, level: "hard", tex1: "x^3 - 4x^2 + 4x", tex2: "x(x - 2)^2" },
+            { id: 38, level: "hard", tex1: "x^2 - y^2 - 4x + 4", tex2: "(x - 2 - y)(x - 2 + y)" },
+            { id: 39, level: "hard", tex1: "x^3 - x^2y - x + y", tex2: "(x - y)(x - 1)(x + 1)" },
+            { id: 40, level: "hard", tex1: "x^4 + 4", tex2: "(x^2 - 2x + 2)(x^2 + 2x + 2)" }
+        ];
+
+        // Cấu hình tiến trình trò chơi
+        const TOTAL_GAME_MATCHES = 12; // 3 vòng x 4 cặp = 12 cặp tổng cộng
+        const ROUND_MATCHES = 4; // 4 cặp một vòng
+        const TIME_LIMIT = 300; // 5 phút cho toàn hành trình (Dễ ➔ Vừa ➔ Khó)
+
+        // Trạng thái vận hành
+        let currentRound = 1;        // Đại diện cho Level hiện tại (1: Dễ, 2: Vừa, 3: Khó)
+        let activeRoundPairs = [];    // 4 cặp thẻ đang hiển thị của cấp độ hiện tại
+        let cards = [];
+        let flippedCards = [];
+        let matchedInRound = 0;      // Số cặp lật đúng trong cấp độ hiện tại (0 -> 4)
+        let totalMatched = 0;        // Tổng số cặp đã lật đúng cả bàn (0 -> 12)
+        let moves = 0;
+        let timer = null;
+        let seconds = TIME_LIMIT;
+        let isLocked = false;
+        
+        let currentPlayer = "";
+        let currentClass = "";
+
+        // Rung nhẹ phản hồi (haptic) trên Mobile
+        function triggerVibrate(pattern) {
+            if (navigator.vibrate) {
+                navigator.vibrate(pattern);
+            }
+        }
+
+        // Thông báo góc màn hình tinh gọn
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bg = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-indigo-500';
+            toast.className = `px-3.5 py-2.5 rounded-xl shadow-lg text-white font-black text-xs md:text-base transform transition-all duration-300 translate-y-[-50%] opacity-0 flex items-center justify-center gap-1.5 ${bg} border-2 border-white pointer-events-auto text-center w-full`;
+            toast.innerHTML = `<span>${message}</span>`;
+            
+            document.getElementById('toast-container').appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-[-50%]', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-50%]');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // Chọn 4 cặp ngẫu nhiên theo đúng Cấp độ của Vòng hiện tại
+        function preparePairsForLevel() {
+            let filterLevel = "easy";
+            if (currentRound === 2) filterLevel = "medium";
+            else if (currentRound === 3) filterLevel = "hard";
+
+            const filteredPool = mathPairsPool.filter(p => p.level === filterLevel);
+            activeRoundPairs = [...filteredPool].sort(() => 0.5 - Math.random()).slice(0, 4);
+        }
+
+        async function startGameFlow(event) {
+            if (event) event.preventDefault(); 
+            
+            const nameInput = document.getElementById('player-name').value.trim();
+            const classInput = document.getElementById('player-class').value.trim();
+
+            if (!nameInput || !classInput) {
+                showToast("Nhập Tên và Lớp để bắt đầu tranh tài nhé!", "error");
+                return;
+            }
+
+            currentPlayer = nameInput;
+            currentClass = classInput;
+
+            document.getElementById('display-name').innerText = currentPlayer;
+            document.getElementById('display-class').innerText = currentClass;
+            document.getElementById('modal-player-info').innerText = `${currentPlayer} - Lớp ${currentClass}`;
+
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            currentRound = 1;
+            totalMatched = 0;
+            seconds = TIME_LIMIT;
+
+            initRound();
+            startTimer();
+        }
+
+        function changePlayer() {
+            clearInterval(timer);
+            document.getElementById('win-modal').classList.add('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('welcome-screen').classList.remove('hidden');
+            
+            document.getElementById('player-name').value = '';
+            document.getElementById('player-class').value = '';
+            document.getElementById('game-board').innerHTML = ''; 
+        }
+
+        // Khởi tạo vòng chơi (cấp độ) mới gồm đúng 4 cặp (8 thẻ)
+        function initRound() {
+            matchedInRound = 0;
+            flippedCards = [];
+            isLocked = false;
+            
+            document.getElementById('win-modal').classList.add('hidden');
+            preparePairsForLevel();
+            updateUI();
+
+            cards = [];
+            activeRoundPairs.forEach(pair => {
+                cards.push({ id: pair.id, tex: pair.tex1 });
+                cards.push({ id: pair.id, tex: pair.tex2 });
+            });
+
+            // Trộn ngẫu nhiên 8 quân bài
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+
+            const board = document.getElementById('game-board');
+            board.innerHTML = '';
+            
+            cards.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'scene';
+                cardEl.innerHTML = `
+                    <div class="card" data-index="${index}" data-id="${card.id}" onclick="flipCard(this)">
+                        <div class="card__face card__face--front"></div>
+                        <div class="card__face card__face--back p-1 flex items-center justify-center text-center select-none overflow-hidden" id="katex-${index}"></div>
+                    </div>
+                `;
+                board.appendChild(cardEl);
+                
+                if (window.katex) {
+                    const targetContainer = document.getElementById(`katex-${index}`);
+                    // Render inline math (displayMode: false) giúp công thức gọn gàng hơn
+                    katex.render(card.tex, targetContainer, {
+                        throwOnError: false,
+                        displayMode: false,
+                        strict: false
+                    });
+
+                    // Dynamic Auto-scaling: Tự động phát hiện tràn chiều rộng thẻ và CSS scale công thức vừa vặn
+                    setTimeout(() => {
+                        const katexRendered = targetContainer.querySelector('.katex');
+                        if (katexRendered) {
+                            const paddingMultiplier = 14; // khoảng trống an toàn
+                            const containerWidth = targetContainer.clientWidth - paddingMultiplier;
+                            const formulaWidth = katexRendered.scrollWidth || katexRendered.offsetWidth;
+
+                            if (formulaWidth > containerWidth) {
+                                const scaleFactor = containerWidth / formulaWidth;
+                                // Giới hạn nhỏ nhất là scale(0.5) để không bị quá mờ mắt học sinh
+                                const finalScale = Math.max(scaleFactor, 0.5); 
+                                katexRendered.style.display = 'inline-block';
+                                katexRendered.style.transform = `scale(${finalScale})`;
+                                katexRendered.style.transformOrigin = 'center center';
+                            }
+                        }
+                    }, 50); // độ trễ nhỏ đảm bảo KaTeX đã vẽ xong cấu trúc DOM
+                }
+            });
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timer = setInterval(() => {
+                seconds--;
+                updateUI();
+                if (seconds <= 0) {
+                    gameOver(false);
+                }
+            }, 1000);
+        }
+
+        function flipCard(cardElement) {
+            if (isLocked) return;
+            if (cardElement.classList.contains('is-flipped')) return;
+
+            cardElement.classList.add('is-flipped');
+            flippedCards.push(cardElement);
+
+            if (flippedCards.length === 2) {
+                moves++;
+                updateUI();
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const card1 = flippedCards[0];
+            const card2 = flippedCards[1];
+            
+            const isMatch = card1.dataset.id === card2.dataset.id;
+
+            if (isMatch) {
+                isLocked = true;
+                triggerVibrate([40, 40]); // Rung nhẹ kép báo hiệu ghép đôi đúng
+                setTimeout(() => {
+                    card1.classList.add('matched', 'pop');
+                    card2.classList.add('matched', 'pop');
+                    matchedInRound++;
+                    totalMatched++;
+                    isLocked = false;
+                    updateUI(); 
+                    
+                    // Nếu đã tìm đúng cả 4 bộ của vòng hiện tại
+                    if (matchedInRound === ROUND_MATCHES) {
+                        if (currentRound < 3) {
+                            isLocked = true;
+                            setTimeout(() => {
+                                let txtNextLevel = currentRound === 1 ? "Level 2 (Vừa)" : "Level 3 (Khó)";
+                                showToast(`🎉 Xuất sắc! Vượt qua Level ${currentRound}. Bắt đầu ${txtNextLevel}!`, 'success');
+                                currentRound++;
+                                initRound();
+                            }, 1000);
+                        } else {
+                            setTimeout(() => gameOver(true), 600); 
+                        }
+                    }
+                }, 400);
+                flippedCards = [];
+            } else {
+                isLocked = true;
+                triggerVibrate(80); // Rung đơn báo lật thẻ sai
+                setTimeout(() => {
+                    card1.classList.add('wiggle');
+                    card2.classList.add('wiggle');
+                    
+                    setTimeout(() => {
+                        card1.classList.remove('is-flipped', 'wiggle');
+                        card2.classList.remove('is-flipped', 'wiggle');
+                        flippedCards = [];
+                        isLocked = false;
+                    }, 400);
+                }, 900);
+            }
+        }
+
+        function updateUI() {
+            let txtLabel = "Level 1/3";
+            if (currentRound === 2) txtLabel = "Level 2/3";
+            else if (currentRound === 3) txtLabel = "Level 3/3";
+
+            document.getElementById('level-indicator').innerText = txtLabel;
+            document.getElementById('matches').innerText = `${totalMatched}/${TOTAL_GAME_MATCHES}`;
+            document.getElementById('moves').innerText = moves;
+            
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            const timeEl = document.getElementById('time');
+            
+            timeEl.innerText = `${m}:${s}`;
+            
+            // Cảnh báo thời gian khẩn cấp (15 giây cuối)
+            if (seconds <= 15 && seconds > 0) {
+                timeEl.parentElement.classList.add('animate-pulse', '!bg-red-100', '!text-red-600', '!border-red-300');
+            } else {
+                timeEl.parentElement.classList.remove('animate-pulse', '!bg-red-100', '!text-red-600', '!border-red-300');
+            }
+        }
+
+        function gameOver(isWin) {
+            clearInterval(timer);
+            isLocked = true;
+            
+            const modal = document.getElementById('win-modal');
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+            const emoji = document.getElementById('modal-emoji');
+            
+            if (isWin) {
+                triggerVibrate([100, 50, 100, 50, 200]); // Rung haptic liên hồi ăn mừng
+                title.innerText = "Tuyệt Vời!";
+                title.className = "text-2xl md:text-4xl font-black text-green-500 mt-4 md:mt-6 mb-1 md:mb-4";
+                desc.innerText = `Chúc mừng bạn đã hoàn thành xuất sắc cả 3 cấp độ toán đa thức!`;
+                emoji.innerText = "🏆";
+                createConfetti();
+            } else {
+                title.innerText = "Hết Giờ Rồi!";
+                title.className = "text-2xl md:text-4xl font-black text-red-500 mt-4 md:mt-6 mb-1 md:mb-4";
+                desc.innerText = "Thời gian đã kết thúc mất rồi, chơi lại để rèn luyện tốc độ nhé!";
+                emoji.innerText = "⏰";
+            }
+            
+            document.getElementById('final-matches').innerText = `${totalMatched}/${TOTAL_GAME_MATCHES}`;
+            document.getElementById('final-moves').innerText = moves;
+            
+            const m = Math.floor(Math.max(seconds, 0) / 60).toString().padStart(2, '0');
+            const s = (Math.max(seconds, 0) % 60).toString().padStart(2, '0');
+            document.getElementById('final-time').innerText = `${m}:${s}`;
+            
+            modal.classList.remove('hidden');
+        }
+
+        async function restartGame() {
+            document.getElementById('win-modal').classList.add('hidden');
+            currentRound = 1;
+            totalMatched = 0;
+            seconds = TIME_LIMIT;
+
+            initRound();
+            startTimer();
+        }
+
+        function createConfetti() {
+            const colors = ['#fce18a', '#ff726d', '#b48def', '#f4306d', '#22c55e', '#06b6d4'];
+            for (let i = 0; i < 75; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = (Math.random() * 100) + 'vw';
+                confetti.style.top = -20 + 'px';
+                document.body.appendChild(confetti);
+                
+                const duration = Math.random() * 2.5 + 2; 
+                
+                confetti.animate([
+                    { transform: `translate3d(0,0,0) rotate(0deg)`, opacity: 1 },
+                    { transform: `translate3d(${Math.random()*160 - 80}px, 100vh, 0) rotate(${Math.random()*720}deg)`, opacity: 0 }
+                ], {
+                    duration: duration * 1000,
+                    easing: 'cubic-bezier(.37,0,.63,1)',
+                    fill: 'forwards'
+                });
+                
+                setTimeout(() => confetti.remove(), duration * 1000);
+            }
+        }
+    </script>
+</body>
+</html>
