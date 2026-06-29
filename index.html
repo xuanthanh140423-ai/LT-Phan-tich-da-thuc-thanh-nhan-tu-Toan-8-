@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trò chơi Ghép Nhóm Đa Thức AI - Cute Pastel Edition</title>
+    <title>Vườn Đa Thức Kẹo Ngọt - Cute Pastel Edition</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -152,7 +152,7 @@
 
             <div class="text-center">
                 <div class="text-5xl md:text-7xl mb-2 animate-bounce">🦉✨</div>
-                <h2 class="text-2xl md:text-3xl font-black text-amber-500 mb-1 uppercase tracking-wide">Nhóm Đa Thức</h2>
+                <h2 class="text-2xl md:text-3xl font-black text-amber-500 mb-1 uppercase tracking-wide">Vườn Đa Thức<br>Kẹo Ngọt</h2>
                 <p class="text-xs md:text-sm font-bold text-pink-400 mb-5">Thử thách ghép cặp thông minh cùng AI 🧸</p>
             </div>
             
@@ -265,11 +265,9 @@
             </div>
             
             <div class="flex flex-col gap-2.5">
-                <button id="modal-action-btn" onclick="restartGame()" class="btn-cute-3d w-full bg-amber-400 hover:bg-amber-500 text-white font-black py-3 rounded-xl text-base" style="box-shadow: 0 4px 0 #d97706;">
-                    🍬 Thử Sức Lượt Mới
-                </button>
-                <button onclick="changePlayer()" class="w-full text-gray-400 hover:text-amber-500 font-extrabold py-1 underline text-xs">
-                    👋 Thay đổi tài khoản / Thoát ra
+                <!-- Đã loại bỏ hoàn toàn tính năng tự động chơi lại / thử sức lại ngay tại đây -->
+                <button onclick="changePlayer()" class="btn-cute-3d w-full bg-amber-400 hover:bg-amber-500 text-white font-black py-3 rounded-xl text-base" style="box-shadow: 0 4px 0 #d97706;">
+                    👋 Thoát & Quay về màn hình chính
                 </button>
             </div>
         </div>
@@ -328,7 +326,7 @@
         const TOTAL_GAME_MATCHES = 12; 
         const ROUND_MATCHES = 4;       
         const TIME_LIMIT = 300;        
-        const MAX_LIVES = 5; // Đã cập nhật lên 5 mạng           
+        const MAX_LIVES = 5; // Có tối đa 5 mạng           
 
         let currentRound = 1;        
         let activeRoundPairs = [];    
@@ -625,17 +623,13 @@
             const title = document.getElementById('modal-title');
             const desc = document.getElementById('modal-desc');
             const emoji = document.getElementById('modal-emoji');
-            const actionBtn = document.getElementById('modal-action-btn');
 
             triggerVibrate([100, 100, 100]);
             
             title.innerText = "Hết Tim Rồi!";
             title.className = "text-2xl md:text-3xl font-black text-rose-400 mt-6 mb-1";
-            desc.innerText = `Sơ ý quá, bạn đã hết cơ hội ở Level ${currentRound}. Đừng nản lòng, chơi lại nha!`;
+            desc.innerText = `Sơ ý quá, bạn đã hết cơ hội ở Level ${currentRound}. Hãy quay lại màn hình chính và thử sức lại nhé!`;
             emoji.innerText = "🧸";
-            
-            actionBtn.innerText = "🍪 Ghép lại vòng này";
-            actionBtn.onclick = () => retryCurrentLevel();
 
             document.getElementById('final-matches').innerText = `${totalMatched}/${TOTAL_GAME_MATCHES}`;
             document.getElementById('final-errors').innerText = totalErrors;
@@ -645,13 +639,6 @@
             document.getElementById('final-time').innerText = `${m}:${s}`;
             
             modal.classList.remove('hidden');
-        }
-
-        function retryCurrentLevel() {
-            document.getElementById('win-modal').classList.add('hidden');
-            totalMatched = totalMatched - matchedInRound;
-            initRound();
-            startTimer();
         }
 
         function startTimer() {
@@ -712,10 +699,6 @@
             const title = document.getElementById('modal-title');
             const desc = document.getElementById('modal-desc');
             const emoji = document.getElementById('modal-emoji');
-            const actionBtn = document.getElementById('modal-action-btn');
-            
-            actionBtn.innerText = "🍬 Thử Lượt Chơi Mới";
-            actionBtn.onclick = () => restartGame();
 
             if (isWin) {
                 triggerVibrate([100, 50, 100, 50, 200]);
@@ -727,7 +710,7 @@
             } else {
                 title.innerText = "Hết Giờ Mất Rồi!";
                 title.className = "text-2xl md:text-3xl font-black text-rose-400 mt-6 mb-1";
-                desc.innerText = "Bánh ngọt ngọt ngào đã chảy hết, hãy nhanh chân thử lại nha!";
+                desc.innerText = "Kẹo ngọt ngọt ngào đã chảy hết, hãy quay lại màn hình chính và thử sức lại nhé!";
                 emoji.innerText = "⏰";
             }
             
@@ -739,17 +722,6 @@
             document.getElementById('final-time').innerText = `${m}:${s}`;
             
             modal.classList.remove('hidden');
-        }
-
-        async function restartGame() {
-            document.getElementById('win-modal').classList.add('hidden');
-            currentRound = 1;
-            totalMatched = 0;
-            totalErrors = 0;
-            seconds = TIME_LIMIT;
-
-            initRound();
-            startTimer();
         }
 
         function createConfetti() {
