@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trò chơi Lật Thẻ Đa Thức AI</title>
+    <title>Trò chơi Ghép Nhóm Đa Thức AI - Cute Pastel Edition</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,161 +18,113 @@
     <style>
         body { 
             font-family: 'Nunito', sans-serif; 
-            /* Hình nền chấm bi dễ thương */
-            background-color: #fffaf0;
-            background-image: radial-gradient(#ffd1dc 2px, transparent 2px);
-            background-size: 24px 24px;
-            overscroll-behavior-y: contain; /* Ngăn kéo tải lại trang trên điện thoại */
+            /* Hình nền giấy tập kẻ ô vuông học sinh màu Pastel dịu mắt */
+            background-color: #faf6f0;
+            background-image: 
+                linear-gradient(rgba(242, 212, 218, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(242, 212, 218, 0.3) 1px, transparent 1px);
+            background-size: 20px 20px;
+            overscroll-behavior-y: contain;
+        }
+
+        /* Đám mây trôi bồng bềnh dễ thương */
+        .cute-cloud {
+            animation: floatClouds 12s ease-in-out infinite alternate;
+        }
+        @keyframes floatClouds {
+            0% { transform: translateY(0px) translateX(0px); }
+            100% { transform: translateY(-10px) translateX(8px); }
         }
         
-        /* Nút bấm 3D dễ thương */
-        .btn-3d {
-            transition: all 0.1s;
+        /* Nút bấm 3D phong cách kẹo dẻo siêu dễ thương */
+        .btn-cute-3d {
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             top: 0;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
-        .btn-3d:active {
-            top: 4px;
-            box-shadow: 0 0px 0 0 transparent !important;
+        .btn-cute-3d:active {
+            top: 5px;
+            box-shadow: 0 1px 0 0 transparent !important;
         }
 
-        /* Thẻ bài */
-        .scene {
-            perspective: 1000px;
-        }
-        .card {
-            width: 100%;
-            height: 85px; /* Chiều cao tối ưu cho màn hình di động */
-            position: relative;
-            transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
-            transform-style: preserve-3d;
+        /* Thẻ bài phong cách Puffy bồng bềnh */
+        .formula-card {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
+            box-shadow: 0 6px 0 #e6dfd5;
         }
-        @media (min-width: 375px) {
-            .card {
-                height: 98px; /* Màn hình trung bình */
-            }
-        }
-        @media (min-width: 768px) {
-            .card {
-                height: 135px; /* Chiều cao cho máy tính/máy tính bảng */
-            }
-        }
-        .card.is-flipped {
-            transform: rotateY(180deg);
+        .formula-card:hover {
+            transform: translateY(-5px) scale(1.02);
         }
 
-        .card__face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            border-radius: 0.85rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.95rem;
-            padding: 0.2rem;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
-            border: 2px solid white;
+        /* Thẻ đa thức: Pastel Hồng Cam ngọt */
+        .card-dathuc {
+            background-color: #fff0f3;
+            border: 3px solid #ffccd5;
+            color: #ff4d6d;
         }
-        @media (min-width: 768px) {
-            .card__face {
-                border-radius: 1.25rem;
-                font-size: 1.25rem;
-                padding: 0.5rem;
-                box-shadow: 0 8px 0 rgba(0,0,0,0.1);
-                border: 4px solid white;
-            }
+        .card-dathuc.selected {
+            background-color: #ffccd5;
+            border-color: #ff4d6d;
+            box-shadow: 0 8px 0 #ff758f;
+            transform: translateY(-8px) scale(1.04);
         }
 
-        .card__face--front {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-            color: white;
-            font-weight: 900;
-            font-size: 1.8rem;
-            text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+        /* Thẻ nhân tử: Pastel Xanh Mint/Dương mát */
+        .card-nhantur {
+            background-color: #e8f8f5;
+            border: 3px solid #a3e4d7;
+            color: #117864;
         }
-        @media (min-width: 768px) {
-            .card__face--front {
-                font-size: 3.5rem;
-            }
-        }
-        .card__face--front::after {
-            content: '🔍';
-        }
-        .card:hover .card__face--front {
-            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
-            transform: translateY(-2px);
-            transition: all 0.2s ease;
-        }
-        .card__face--back {
-            background: #ffffff;
-            color: #4338ca;
-            transform: rotateY(180deg);
-            border-color: #fbc2eb;
-            overflow: hidden; /* Chống cuộn tràn công thức */
+        .card-nhantur.selected {
+            background-color: #a3e4d7;
+            border-color: #117864;
+            box-shadow: 0 8px 0 #16a085;
+            transform: translateY(-8px) scale(1.04);
         }
 
-        .card.matched .card__face--back {
-            background: #dcfce7; 
-            border-color: #22c55e;
-            color: #14532d;
-            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+        /* Hiệu ứng rung đỏ cực dễ thương khi ghép sai */
+        @keyframes cuteShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            20%, 60% { transform: translateX(-8px) rotate(-1.5deg); }
+            40%, 80% { transform: translateX(8px) rotate(1.5deg); }
+        }
+        .shake-error {
+            animation: cuteShake 0.45s ease-in-out;
+            border-color: #ff85a1 !important;
+            box-shadow: 0 6px 0 #ff5c8a !important;
+            background-color: #ffe3e8 !important;
         }
 
-        /* Animation lật sai */
-        @keyframes wiggle {
-            0%, 100% { transform: rotateY(180deg) rotate(0deg); }
-            25% { transform: rotateY(180deg) rotate(-5deg); }
-            75% { transform: rotateY(180deg) rotate(5deg); }
+        /* Hiệu ứng nảy bông khi ghép đúng */
+        @keyframes jellyPop {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.15); }
+            70% { transform: scale(0.95); }
+            100% { transform: scale(1); }
         }
-        .wiggle {
-            animation: wiggle 0.4s ease-in-out;
+        .scale-success {
+            animation: jellyPop 0.5s ease-out;
         }
 
-        /* Animation lật đúng */
-        @keyframes pop {
-            0% { transform: rotateY(180deg) scale(1); }
-            50% { transform: rotateY(180deg) scale(1.08); }
-            100% { transform: rotateY(180deg) scale(1); }
-        }
-        .pop {
-            animation: pop 0.4s ease-out;
-        }
-        
         .confetti {
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             pointer-events: none;
             z-index: 100;
         }
-        
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
 
-        /* Tối ưu hóa kích thước chữ cho KaTeX khi lật thẻ */
         .katex {
-            font-size: 0.9em !important; 
+            font-size: 0.95em !important; 
+            font-weight: bold;
             white-space: nowrap;
-            transition: transform 0.2s ease-out;
-        }
-        @media (min-width: 375px) {
-            .katex {
-                font-size: 0.95em !important;
-            }
+            color: inherit;
         }
         @media (min-width: 768px) {
             .katex {
@@ -181,110 +133,143 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center py-2 md:py-8 relative overflow-x-hidden select-none">
+<body class="min-h-screen flex flex-col items-center py-4 md:py-8 relative overflow-x-hidden select-none">
 
-    <!-- Toast Notifications thiết kế gọn gàng cho Mobile -->
+    <!-- Đám mây trang trí góc bay lượn -->
+    <div class="cute-cloud absolute top-6 left-4 md:left-20 text-3xl md:text-5xl pointer-events-none opacity-40">☁️</div>
+    <div class="cute-cloud absolute top-16 right-4 md:right-24 text-3xl md:text-5xl pointer-events-none opacity-40" style="animation-delay: -2s;">🎈</div>
+    <div class="cute-cloud absolute bottom-10 left-10 text-4xl pointer-events-none opacity-30" style="animation-delay: -4s;">✨🌸</div>
+
     <div id="toast-container" class="fixed top-2 md:top-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 z-50 flex flex-col gap-1.5 pointer-events-none w-[90%] md:w-auto"></div>
 
-    <!-- Màn hình Nhập thông tin và cấu hình luật chơi -->
-    <div id="welcome-screen" class="w-full max-w-md px-4 mt-2 md:mt-10">
-        <div class="bg-white p-5 md:p-8 rounded-[2rem] shadow-2xl border-4 border-pink-100">
+    <!-- MÀN HÌNH CHÀO MỪNG CỰC XINH -->
+    <div id="welcome-screen" class="w-full max-w-md px-4 mt-2 md:mt-8 z-10">
+        <div class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-[0_12px_24px_rgba(240,220,200,0.4)] border-[6px] border-amber-100 relative">
+            
+            <!-- Đồ trang trí nhỏ dễ thương ở góc -->
+            <div class="absolute -top-6 -right-3 text-4xl transform rotate-12">⭐</div>
+            <div class="absolute -bottom-4 -left-3 text-4xl transform -rotate-12">🎨</div>
+
             <div class="text-center">
-                <div class="text-4xl md:text-6xl mb-1 md:mb-4">🦉✨</div>
-                <h2 class="text-xl md:text-3xl font-black text-pink-500 mb-3 md:mb-6 uppercase tracking-wide">Thử Thách<br>Lật Thẻ Đa Thức</h2>
+                <div class="text-5xl md:text-7xl mb-2 animate-bounce">🦉✨</div>
+                <h2 class="text-2xl md:text-3xl font-black text-amber-500 mb-1 uppercase tracking-wide">Nhóm Đa Thức</h2>
+                <p class="text-xs md:text-sm font-bold text-pink-400 mb-5">Thử thách ghép cặp thông minh cùng AI 🧸</p>
             </div>
             
             <form id="player-form" onsubmit="startGameFlow(event)">
-                <div class="mb-3 text-left">
-                    <label for="player-name" class="block text-gray-700 font-extrabold mb-1 text-sm md:text-lg">👩‍🎓 Tên của bạn:</label>
-                    <input type="text" id="player-name" required class="w-full px-4 py-3 rounded-2xl border-4 border-gray-200 focus:border-pink-400 focus:outline-none transition-colors font-bold text-base text-gray-700 bg-gray-50" placeholder="Nhập tên của bạn...">
-                </div>
                 <div class="mb-4 text-left">
-                    <label for="player-class" class="block text-gray-700 font-extrabold mb-1 text-sm md:text-lg">🏫 Lớp:</label>
-                    <input type="text" id="player-class" required class="w-full px-4 py-3 rounded-2xl border-4 border-gray-200 focus:border-pink-400 focus:outline-none transition-colors font-bold text-base text-gray-700 bg-gray-50" placeholder="Ví dụ: 8A1">
+                    <label for="player-name" class="block text-amber-600 font-extrabold mb-1.5 text-sm md:text-base">🎒 Tên siêu nhân nhí:</label>
+                    <input type="text" id="player-name" required class="w-full px-4 py-3 rounded-2xl border-4 border-amber-100 focus:border-amber-400 focus:outline-none transition-colors font-bold text-base text-gray-700 bg-amber-50/30" placeholder="Biệt danh đáng yêu của bạn...">
+                </div>
+                <div class="mb-5 text-left">
+                    <label for="player-class" class="block text-amber-600 font-extrabold mb-1.5 text-sm md:text-base">🏫 Lớp học thân yêu:</label>
+                    <input type="text" id="player-class" required class="w-full px-4 py-3 rounded-2xl border-4 border-amber-100 focus:border-amber-400 focus:outline-none transition-colors font-bold text-base text-gray-700 bg-amber-50/30" placeholder="Ví dụ: Lớp 8A3 mến yêu">
                 </div>
 
-                <!-- Thông báo Chế độ Chơi Liên Tục -->
-                <div class="mb-5 text-left">
-                    <div class="p-4 rounded-2xl border-4 border-pink-100 bg-pink-50/50">
-                        <p class="font-extrabold text-pink-700 text-sm md:text-base mb-1">🎮 Hành trình Chinh Phục Đa Thức:</p>
-                        <p class="text-xs text-gray-600 font-bold leading-relaxed mb-2">
-                            Bạn sẽ có tối đa <span class="text-pink-600 font-black">5 phút</span> để lần lượt vượt qua 3 cấp độ thử thách tăng dần từ dễ đến khó:
+                <!-- Luật chơi kẹo ngọt -->
+                <div class="mb-6 text-left">
+                    <div class="p-4 rounded-3xl border-4 border-pink-50 bg-pink-50/30">
+                        <p class="font-extrabold text-pink-500 text-sm md:text-base mb-1">🍭 Thử Thách Cầu Vồng:</p>
+                        <p class="text-[11px] text-gray-500 font-bold leading-relaxed mb-3">
+                            Kết nối 1 thẻ <span class="text-pink-500">Đa thức hồng</span> 🌸 với 1 thẻ <span class="text-teal-600">Nhân tử xanh</span> 🌿 tương ứng để hóa giải các cấp độ kịch tính!
                         </p>
-                        <ul class="text-xs text-gray-600 font-bold space-y-1.5">
-                            <li class="flex items-center gap-1.5">🟢 <span class="text-green-600 font-black">Level 1:</span> 4 cặp thẻ Dễ (Rút nhân tử đơn giản)</li>
-                            <li class="flex items-center gap-1.5">🟡 <span class="text-yellow-600 font-black">Level 2:</span> 4 cặp thẻ Vừa (Hằng đẳng thức bậc hai)</li>
-                            <li class="flex items-center gap-1.5">🔴 <span class="text-red-600 font-black">Level 3:</span> 4 cặp thẻ Khó (Tách hạng tử và nhân tử nâng cao)</li>
+                        <ul class="text-[11px] text-gray-500 font-bold space-y-1.5 mb-2.5">
+                            <li class="flex items-center gap-1.5">🟢 <span class="text-green-500">Vòng 1:</span> Đầm Sen Nhỏ (Nhân tử chung đơn giản)</li>
+                            <li class="flex items-center gap-1.5">🟡 <span class="text-amber-500">Vòng 2:</span> Thung Lũng Mây (Hằng đẳng thức ngọt ngào)</li>
+                            <li class="flex items-center gap-1.5">🔴 <span class="text-rose-500">Vòng 3:</span> Ngọn Núi Tuyết (Tách ghép nâng cao cực đỉnh)</li>
                         </ul>
+                        <p class="text-[11px] text-rose-400 font-black flex items-center gap-1">⚠️ Mỗi Vòng chơi bạn chỉ có <span class="bg-rose-100 px-1.5 rounded-full text-rose-600">5 trái tim ❤️</span> thôi nha!</p>
                     </div>
                 </div>
                 
-                <div class="flex flex-col gap-3 mt-3">
-                    <button type="submit" class="btn-3d w-full bg-cyan-400 hover:bg-cyan-500 text-white font-black py-3 md:py-4 px-6 rounded-2xl text-base md:text-xl uppercase tracking-wide" style="box-shadow: 0 5px 0 #06b6d4;">
-                        🚀 Vào Chinh Phục Ngay
+                <div class="flex flex-col gap-3">
+                    <button type="submit" class="btn-cute-3d w-full bg-amber-400 hover:bg-amber-500 text-white font-black py-3.5 px-6 rounded-2xl text-lg uppercase tracking-wider" style="box-shadow: 0 6px 0 #d97706;">
+                        🍡 Bắt Đầu Khám Phá
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Màn hình Game -->
-    <div id="game-screen" class="max-w-4xl w-full px-2.5 hidden">
-        <!-- Header tinh gọn -->
-        <div class="text-center mb-2 md:mb-5">
-            <h1 class="text-xl md:text-4xl font-black text-pink-500 mb-1 md:mb-3 drop-shadow-sm">🎮 Truy Tìm Nhân Tử 🧩</h1>
+    <!-- MÀN HÌNH GAME CHÍNH -->
+    <div id="game-screen" class="max-w-4xl w-full px-3 hidden z-10">
+        <!-- Header bồng bềnh -->
+        <div class="text-center mb-3 md:mb-6">
+            <h1 class="text-2xl md:text-4xl font-black text-amber-500 mb-1.5 drop-shadow-sm flex items-center justify-center gap-2">
+                🧁 Vườn Đa Thức Kẹo Ngọt 🍬
+            </h1>
             
-            <div class="text-xs md:text-lg font-bold text-cyan-800 bg-cyan-100 border-2 border-white inline-block px-3.5 py-0.5 md:py-1 rounded-full mb-2 shadow-sm transform rotate-1">
-                🧑‍🎓 <span id="display-name"></span> &nbsp;|&nbsp; 🏫 <span id="display-class"></span>
+            <div class="text-xs md:text-sm font-bold text-amber-800 bg-amber-100 border-2 border-white inline-block px-4 py-1 rounded-full mb-3 shadow-sm">
+                🎒 Trò chuyện với: <span id="display-name" class="font-extrabold text-pink-500"></span> &nbsp;|&nbsp; Lớp: <span id="display-class" class="font-extrabold text-teal-600"></span>
             </div>
             
-            <!-- Bảng chỉ số ngang tối giản trên Mobile -->
-            <div class="flex justify-center gap-1.5 md:gap-4 text-xs md:text-xl font-extrabold text-gray-700">
-                <div class="bg-white py-1 px-3 md:py-2 md:px-6 rounded-xl md:rounded-2xl shadow-sm border-2 border-pink-200 text-pink-500 flex items-center">
-                    🔥&nbsp;<span id="level-indicator">Level 1/3</span>
+            <!-- Hộp chỉ số thiết kế bong bóng tròn trịa -->
+            <div class="flex flex-wrap justify-center gap-2 text-xs md:text-base font-extrabold text-gray-600">
+                <div class="bg-white py-1.5 px-3 md:py-2 md:px-5 rounded-2xl shadow-sm border-2 border-amber-200 text-amber-500 flex items-center gap-1.5">
+                    🚀 <span id="level-indicator">Level 1/3</span>
                 </div>
-                <div class="bg-white py-1 px-3 md:py-2 md:px-6 rounded-xl md:rounded-2xl shadow-sm border-2 border-green-200 text-green-600 flex items-center">
-                    🎯&nbsp;<span id="matches">0/12</span>
+                <!-- Hộp trái tim hồi hộp -->
+                <div id="lives-indicator" class="bg-white py-1.5 px-3 md:py-2 md:px-5 rounded-2xl shadow-sm border-2 border-pink-200 text-pink-500 flex items-center gap-1.5">
+                    💝 Mạng sống: <span id="heart-icons" class="tracking-widest">❤️❤️❤️❤️❤️</span>
                 </div>
-                <div class="bg-white py-1 px-3 md:py-2 md:px-6 rounded-xl md:rounded-2xl shadow-sm border-2 border-indigo-200 text-indigo-600 flex items-center">
-                    👆&nbsp;<span id="moves">0</span>
+                <div class="bg-white py-1.5 px-3 md:py-2 md:px-5 rounded-2xl shadow-sm border-2 border-green-200 text-green-500 flex items-center gap-1.5">
+                    🎉 Đúng: <span id="matches">0/12</span>
                 </div>
-                <div class="bg-white py-1 px-3 md:py-2 md:px-6 rounded-xl md:rounded-2xl shadow-sm border-2 border-cyan-200 text-cyan-600 flex items-center">
-                    ⏳&nbsp;<span id="time">05:00</span>
+                <div class="bg-white py-1.5 px-3 md:py-2 md:px-5 rounded-2xl shadow-sm border-2 border-cyan-200 text-cyan-500 flex items-center gap-1.5">
+                    ⏳ Thời gian: <span id="time">05:00</span>
                 </div>
             </div>
         </div>
 
-        <!-- Bảng Game (8 quân bài: 2 cột x 4 hàng tinh gọn trên Mobile, 4 cột x 2 hàng trên Desktop) -->
-        <div id="game-board" class="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-5 pb-6">
-            <!-- Thẻ bài sinh bởi JavaScript -->
+        <!-- Khay thông báo nhiệm vụ nhỏ nhắn -->
+        <div class="mb-4 text-center">
+            <span class="text-xs md:text-sm font-black text-amber-700 bg-amber-50 border border-amber-200 px-4 py-1.5 rounded-full shadow-sm">
+                🍒 Chọn 1 thẻ <span class="text-pink-500 font-extrabold">Đa thức (Hồng)</span> kết hợp với 1 thẻ <span class="text-teal-600 font-extrabold">Nhân tử (Xanh Mint)</span> tương ứng nhé!
+            </span>
+        </div>
+        
+        <!-- Bảng Game thẻ 3D marshmallow -->
+        <div id="game-board" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 pb-6">
+            <!-- Thẻ bài được sinh tự động bởi Javascript -->
+        </div>
+
+        <!-- ALBUM ẢNH LƯU NIỆM CÁC CẶP ĐÃ GHÉP THÀNH CÔNG -->
+        <div id="matched-groups-section" class="mt-4 border-t-4 border-dashed border-pink-200 pt-5 hidden">
+            <h3 class="text-sm md:text-lg font-black text-amber-500 mb-3 text-center flex items-center justify-center gap-1">
+                📸 Sổ tay ghép nhóm thông thái của bạn:
+            </h3>
+            <div id="matched-groups-container" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <!-- Chứa các "ảnh dán" xinh xắn khi kết nối chính xác -->
+            </div>
         </div>
     </div>
 
-    <!-- Modal Chiến Thắng / Thua thích ứng kích thước -->
-    <div id="win-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-opacity duration-300">
-        <div class="bg-white p-5 md:p-10 rounded-[2rem] shadow-2xl text-center max-w-sm w-[90%] mx-4 border-4 border-pink-300 relative transform transition-transform duration-300 scale-100">
-            <div id="modal-emoji" class="absolute -top-9 left-1/2 transform -translate-x-1/2 text-4xl md:text-7xl bg-white rounded-full p-2 border-4 border-pink-300 shadow-lg">🏆</div>
+    <!-- MODAL ĐÁNG YÊU CHO CHIẾN THẮNG / THẤT BẠI -->
+    <div id="win-modal" class="fixed inset-0 bg-rose-900/40 backdrop-blur-md flex items-center justify-center hidden z-50 transition-opacity duration-300">
+        <div class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(240,150,150,0.3)] text-center max-w-sm w-[90%] mx-4 border-8 border-amber-100 relative transform transition-transform duration-300 scale-100">
             
-            <h2 id="modal-title" class="text-2xl md:text-4xl font-black text-green-500 mt-4 md:mt-6 mb-1 md:mb-4">Tuyệt Vời!</h2>
-            <p id="modal-desc" class="text-gray-600 text-sm md:text-xl font-bold mb-3">Bạn đã lật mở thành công thử thách!</p>
+            <div id="modal-emoji" class="absolute -top-12 left-1/2 transform -translate-x-1/2 text-5xl md:text-7xl bg-white rounded-full p-2.5 border-4 border-amber-100 shadow-md">🏆</div>
             
-            <div class="bg-gray-50 rounded-xl md:rounded-2xl p-3 mb-4 border-2 border-dashed border-gray-300">
-                <p class="font-black text-indigo-700 text-base md:text-xl mb-1.5" id="modal-player-info"></p>
-                <p class="font-black text-gray-500 text-xs md:text-base mb-1.5">Tiến trình: <span class="text-pink-500">Vượt qua 3 Cấp độ Thử Thách</span></p>
-                <div class="grid grid-cols-2 gap-1.5 text-sm md:text-lg font-bold">
-                    <div class="text-green-600">🎯 Tìm đúng: <span id="final-matches">0/12</span></div>
-                    <div class="text-indigo-600">👆 Lượt lật: <span id="final-moves">0</span></div>
+            <h2 id="modal-title" class="text-2xl md:text-3xl font-black text-amber-500 mt-6 mb-1">Tuyệt Diệu!</h2>
+            <p id="modal-desc" class="text-gray-500 text-xs md:text-sm font-bold mb-4">Bạn là một thiên tài toán học!</p>
+            
+            <div class="bg-amber-50/50 rounded-2xl p-4 mb-5 border-2 border-dashed border-amber-200 text-left">
+                <p class="font-black text-amber-700 text-sm md:text-base mb-1.5 text-center" id="modal-player-info"></p>
+                <div class="grid grid-cols-2 gap-2 text-xs md:text-sm font-bold text-gray-600 mt-2 border-t border-amber-100 pt-2">
+                    <div class="text-green-500">🍒 Ghép đúng: <span id="final-matches" class="font-black">0/12</span></div>
+                    <div class="text-rose-400">🍼 Sơ suất: <span id="final-errors" class="font-black">0</span> lần</div>
                 </div>
-                <div class="mt-1.5 text-pink-500 text-sm md:text-lg font-bold">⏳ Dư: <span id="final-time">00:00</span></div>
+                <div class="mt-2 text-center text-pink-400 text-xs md:text-sm font-bold">
+                    ⏳ Thời gian dư dả: <span id="final-time" class="font-black">00:00</span>
+                </div>
             </div>
             
-            <div class="flex flex-col gap-2">
-                <button onclick="restartGame()" class="btn-3d w-full bg-cyan-400 hover:bg-cyan-500 text-white font-black py-2.5 rounded-xl md:rounded-2xl text-base md:text-xl" style="box-shadow: 0 4px 0 #06b6d4;">
-                    🔄 Chơi Lượt Mới
+            <div class="flex flex-col gap-2.5">
+                <button id="modal-action-btn" onclick="restartGame()" class="btn-cute-3d w-full bg-amber-400 hover:bg-amber-500 text-white font-black py-3 rounded-xl text-base" style="box-shadow: 0 4px 0 #d97706;">
+                    🍬 Thử Sức Lượt Mới
                 </button>
-                <button onclick="changePlayer()" class="w-full text-gray-500 hover:text-gray-800 font-bold py-1.5 mt-0.5 underline text-xs md:text-base">
-                    👋 Đổi người chơi / Thoát
+                <button onclick="changePlayer()" class="w-full text-gray-400 hover:text-amber-500 font-extrabold py-1 underline text-xs">
+                    👋 Thay đổi tài khoản / Thoát ra
                 </button>
             </div>
         </div>
@@ -340,38 +325,36 @@
             { id: 40, level: "hard", tex1: "x^4 + 4", tex2: "(x^2 - 2x + 2)(x^2 + 2x + 2)" }
         ];
 
-        // Cấu hình tiến trình trò chơi
-        const TOTAL_GAME_MATCHES = 12; // 3 vòng x 4 cặp = 12 cặp tổng cộng
-        const ROUND_MATCHES = 4; // 4 cặp một vòng
-        const TIME_LIMIT = 300; // 5 phút cho toàn hành trình (Dễ ➔ Vừa ➔ Khó)
+        const TOTAL_GAME_MATCHES = 12; 
+        const ROUND_MATCHES = 4;       
+        const TIME_LIMIT = 300;        
+        const MAX_LIVES = 5; // Đã cập nhật lên 5 mạng           
 
-        // Trạng thái vận hành
-        let currentRound = 1;        // Đại diện cho Level hiện tại (1: Dễ, 2: Vừa, 3: Khó)
-        let activeRoundPairs = [];    // 4 cặp thẻ đang hiển thị của cấp độ hiện tại
+        let currentRound = 1;        
+        let activeRoundPairs = [];    
         let cards = [];
-        let flippedCards = [];
-        let matchedInRound = 0;      // Số cặp lật đúng trong cấp độ hiện tại (0 -> 4)
-        let totalMatched = 0;        // Tổng số cặp đã lật đúng cả bàn (0 -> 12)
-        let moves = 0;
+        let selectedCards = [];       
+        let matchedInRound = 0;      
+        let totalMatched = 0;        
         let timer = null;
         let seconds = TIME_LIMIT;
         let isLocked = false;
-        
+        let playerLives = MAX_LIVES;   
+        let totalErrors = 0;          
+
         let currentPlayer = "";
         let currentClass = "";
 
-        // Rung nhẹ phản hồi (haptic) trên Mobile
         function triggerVibrate(pattern) {
             if (navigator.vibrate) {
                 navigator.vibrate(pattern);
             }
         }
 
-        // Thông báo góc màn hình tinh gọn
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
-            const bg = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-indigo-500';
-            toast.className = `px-3.5 py-2.5 rounded-xl shadow-lg text-white font-black text-xs md:text-base transform transition-all duration-300 translate-y-[-50%] opacity-0 flex items-center justify-center gap-1.5 ${bg} border-2 border-white pointer-events-auto text-center w-full`;
+            const bg = type === 'error' ? 'bg-rose-400' : type === 'success' ? 'bg-emerald-400' : 'bg-amber-400';
+            toast.className = `px-4 py-3 rounded-2xl shadow-md text-white font-black text-xs md:text-sm transform transition-all duration-300 translate-y-[-50%] opacity-0 flex items-center justify-center gap-2 ${bg} border-2 border-white pointer-events-auto text-center w-full`;
             toast.innerHTML = `<span>${message}</span>`;
             
             document.getElementById('toast-container').appendChild(toast);
@@ -383,7 +366,6 @@
             }, 2500);
         }
 
-        // Chọn 4 cặp ngẫu nhiên theo đúng Cấp độ của Vòng hiện tại
         function preparePairsForLevel() {
             let filterLevel = "easy";
             if (currentRound === 2) filterLevel = "medium";
@@ -400,7 +382,7 @@
             const classInput = document.getElementById('player-class').value.trim();
 
             if (!nameInput || !classInput) {
-                showToast("Nhập Tên và Lớp để bắt đầu tranh tài nhé!", "error");
+                showToast("🦄 Điền thông tin dễ thương của bạn để chơi nhé!", "error");
                 return;
             }
 
@@ -409,13 +391,14 @@
 
             document.getElementById('display-name').innerText = currentPlayer;
             document.getElementById('display-class').innerText = currentClass;
-            document.getElementById('modal-player-info').innerText = `${currentPlayer} - Lớp ${currentClass}`;
+            document.getElementById('modal-player-info').innerText = `${currentPlayer} ✨ - Lớp ${currentClass}`;
 
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
 
             currentRound = 1;
             totalMatched = 0;
+            totalErrors = 0;
             seconds = TIME_LIMIT;
 
             initRound();
@@ -431,25 +414,30 @@
             document.getElementById('player-name').value = '';
             document.getElementById('player-class').value = '';
             document.getElementById('game-board').innerHTML = ''; 
+            document.getElementById('matched-groups-container').innerHTML = '';
+            document.getElementById('matched-groups-section').classList.add('hidden');
         }
 
-        // Khởi tạo vòng chơi (cấp độ) mới gồm đúng 4 cặp (8 thẻ)
         function initRound() {
             matchedInRound = 0;
-            flippedCards = [];
+            selectedCards = [];
+            playerLives = MAX_LIVES;
             isLocked = false;
             
             document.getElementById('win-modal').classList.add('hidden');
+            document.getElementById('matched-groups-container').innerHTML = '';
+            document.getElementById('matched-groups-section').classList.add('hidden');
+            
             preparePairsForLevel();
             updateUI();
 
             cards = [];
             activeRoundPairs.forEach(pair => {
-                cards.push({ id: pair.id, tex: pair.tex1 });
-                cards.push({ id: pair.id, tex: pair.tex2 });
+                cards.push({ id: pair.id, type: "dathuc", tex: pair.tex1 });
+                cards.push({ id: pair.id, type: "nhantur", tex: pair.tex2 });
             });
 
-            // Trộn ngẫu nhiên 8 quân bài
+            // Trộn ngẫu nhiên các mảnh ghép
             for (let i = cards.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [cards[i], cards[j]] = [cards[j], cards[i]];
@@ -460,44 +448,210 @@
             
             cards.forEach((card, index) => {
                 const cardEl = document.createElement('div');
-                cardEl.className = 'scene';
+                
+                // Phân biệt kiểu màu Pastel theo thể loại
+                const styleClass = card.type === 'dathuc' ? 'card-dathuc' : 'card-nhantur';
+                cardEl.className = `formula-card ${styleClass} p-4 md:p-6 rounded-[2rem] flex flex-col items-center justify-center min-h-[105px] md:min-h-[135px] relative`;
+                
+                cardEl.setAttribute('data-id', card.id);
+                cardEl.setAttribute('data-type', card.type);
+                cardEl.setAttribute('data-index', index);
+                
+                const labelText = card.type === 'dathuc' ? '🌸 Đa thức' : '🌿 Nhân tử';
+                const labelStyle = card.type === 'dathuc' ? 'bg-pink-200/60 text-pink-700' : 'bg-teal-200/60 text-teal-800';
+                
                 cardEl.innerHTML = `
-                    <div class="card" data-index="${index}" data-id="${card.id}" onclick="flipCard(this)">
-                        <div class="card__face card__face--front"></div>
-                        <div class="card__face card__face--back p-1 flex items-center justify-center text-center select-none overflow-hidden" id="katex-${index}"></div>
-                    </div>
+                    <span class="absolute top-1.5 left-2 px-2.5 py-0.5 text-[9px] md:text-[11px] font-black rounded-full ${labelStyle}">
+                        ${labelText}
+                    </span>
+                    <div class="katex-container mt-2.5 flex items-center justify-center select-none overflow-hidden w-full text-center" id="katex-${index}"></div>
                 `;
+                
+                cardEl.onclick = () => selectCard(cardEl);
                 board.appendChild(cardEl);
                 
                 if (window.katex) {
                     const targetContainer = document.getElementById(`katex-${index}`);
-                    // Render inline math (displayMode: false) giúp công thức gọn gàng hơn
                     katex.render(card.tex, targetContainer, {
                         throwOnError: false,
                         displayMode: false,
                         strict: false
                     });
 
-                    // Dynamic Auto-scaling: Tự động phát hiện tràn chiều rộng thẻ và CSS scale công thức vừa vặn
                     setTimeout(() => {
                         const katexRendered = targetContainer.querySelector('.katex');
                         if (katexRendered) {
-                            const paddingMultiplier = 14; // khoảng trống an toàn
+                            const paddingMultiplier = 16;
                             const containerWidth = targetContainer.clientWidth - paddingMultiplier;
                             const formulaWidth = katexRendered.scrollWidth || katexRendered.offsetWidth;
 
                             if (formulaWidth > containerWidth) {
                                 const scaleFactor = containerWidth / formulaWidth;
-                                // Giới hạn nhỏ nhất là scale(0.5) để không bị quá mờ mắt học sinh
-                                const finalScale = Math.max(scaleFactor, 0.5); 
+                                const finalScale = Math.max(scaleFactor, 0.45); 
                                 katexRendered.style.display = 'inline-block';
                                 katexRendered.style.transform = `scale(${finalScale})`;
                                 katexRendered.style.transformOrigin = 'center center';
                             }
                         }
-                    }, 50); // độ trễ nhỏ đảm bảo KaTeX đã vẽ xong cấu trúc DOM
+                    }, 50);
                 }
             });
+        }
+
+        function selectCard(cardElement) {
+            if (isLocked) return;
+            if (cardElement.classList.contains('bg-green-100')) return;
+
+            if (cardElement.classList.contains('selected')) {
+                cardElement.classList.remove('selected');
+                selectedCards = selectedCards.filter(el => el !== cardElement);
+                return;
+            }
+
+            cardElement.classList.add('selected');
+            selectedCards.push(cardElement);
+
+            if (selectedCards.length === 2) {
+                isLocked = true;
+                checkGroupMatch();
+            }
+        }
+
+        function checkGroupMatch() {
+            const el1 = selectedCards[0];
+            const el2 = selectedCards[1];
+            
+            const id1 = el1.getAttribute('data-id');
+            const id2 = el2.getAttribute('data-id');
+            const type1 = el1.getAttribute('data-type');
+            const type2 = el2.getAttribute('data-type');
+
+            const isMatch = (id1 === id2) && (type1 !== type2);
+
+            if (isMatch) {
+                triggerVibrate([40, 40]);
+                setTimeout(() => {
+                    el1.classList.remove('selected');
+                    el2.classList.remove('selected');
+                    el1.classList.add('scale-success');
+                    el2.classList.add('scale-success');
+
+                    // Hiển thị tấm ảnh lưu niệm cặp ghép đúng
+                    addMatchedGroupToContainer(id1);
+
+                    el1.style.visibility = 'hidden';
+                    el2.style.visibility = 'hidden';
+                    el1.style.pointerEvents = 'none';
+                    el2.style.pointerEvents = 'none';
+
+                    matchedInRound++;
+                    totalMatched++;
+                    isLocked = false;
+                    selectedCards = [];
+                    updateUI();
+
+                    if (matchedInRound === ROUND_MATCHES) {
+                        if (currentRound < 3) {
+                            isLocked = true;
+                            setTimeout(() => {
+                                let txtNextLevel = currentRound === 1 ? "Vòng 2 (Thung Lũng Mây)" : "Vòng 3 (Ngọn Núi Tuyết)";
+                                showToast(`🎉 Xuất sắc vượt qua Level ${currentRound}! Đi tới ${txtNextLevel} thôi nào!`, 'success');
+                                currentRound++;
+                                initRound();
+                            }, 1200);
+                        } else {
+                            setTimeout(() => gameOver(true), 600);
+                        }
+                    }
+                }, 400);
+            } else {
+                triggerVibrate(80);
+                totalErrors++;
+                playerLives--; 
+                updateUI();
+
+                setTimeout(() => {
+                    el1.classList.add('shake-error');
+                    el2.classList.add('shake-error');
+                    
+                    setTimeout(() => {
+                        el1.classList.remove('selected', 'shake-error');
+                        el2.classList.remove('selected', 'shake-error');
+                        selectedCards = [];
+                        
+                        if (playerLives <= 0) {
+                            levelFailed();
+                        } else {
+                            isLocked = false;
+                            showToast(`🍡 Nhóm chưa đúng rồi! Bạn còn ${playerLives} cơ hội ở Level này nha.`, 'error');
+                        }
+                    }, 500);
+                }, 400);
+            }
+        }
+
+        // Thiết kế khung ảnh lưu niệm ghép đúng (style Polaroid)
+        function addMatchedGroupToContainer(pairId) {
+            const matchedPair = activeRoundPairs.find(p => p.id == pairId);
+            if (!matchedPair) return;
+
+            const section = document.getElementById('matched-groups-section');
+            section.classList.remove('hidden');
+
+            const container = document.getElementById('matched-groups-container');
+            const groupEl = document.createElement('div');
+            groupEl.className = 'bg-white border-2 border-amber-100 rounded-3xl p-4 flex flex-wrap items-center justify-around text-center gap-1 shadow-sm relative scale-success';
+            
+            const uniqueId = `matched-katex-${pairId}-${Date.now()}`;
+            groupEl.innerHTML = `
+                <div class="text-[10px] bg-amber-100 text-amber-800 px-3 py-0.5 rounded-full absolute -top-2.5 left-4 font-black uppercase tracking-wider">🌟 Đã Kết Đôi</div>
+                <div class="font-bold text-pink-500 text-xs md:text-sm" id="${uniqueId}-left"></div>
+                <div class="text-xl text-amber-400 font-black px-1">⟺</div>
+                <div class="font-bold text-teal-600 text-xs md:text-sm" id="${uniqueId}-right"></div>
+            `;
+            container.appendChild(groupEl);
+
+            if (window.katex) {
+                katex.render(matchedPair.tex1, document.getElementById(`${uniqueId}-left`), { throwOnError: false });
+                katex.render(matchedPair.tex2, document.getElementById(`${uniqueId}-right`), { throwOnError: false });
+            }
+        }
+
+        function levelFailed() {
+            clearInterval(timer);
+            isLocked = true;
+            
+            const modal = document.getElementById('win-modal');
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+            const emoji = document.getElementById('modal-emoji');
+            const actionBtn = document.getElementById('modal-action-btn');
+
+            triggerVibrate([100, 100, 100]);
+            
+            title.innerText = "Hết Tim Rồi!";
+            title.className = "text-2xl md:text-3xl font-black text-rose-400 mt-6 mb-1";
+            desc.innerText = `Sơ ý quá, bạn đã hết cơ hội ở Level ${currentRound}. Đừng nản lòng, chơi lại nha!`;
+            emoji.innerText = "🧸";
+            
+            actionBtn.innerText = "🍪 Ghép lại vòng này";
+            actionBtn.onclick = () => retryCurrentLevel();
+
+            document.getElementById('final-matches').innerText = `${totalMatched}/${TOTAL_GAME_MATCHES}`;
+            document.getElementById('final-errors').innerText = totalErrors;
+            
+            const m = Math.floor(Math.max(seconds, 0) / 60).toString().padStart(2, '0');
+            const s = (Math.max(seconds, 0) % 60).toString().padStart(2, '0');
+            document.getElementById('final-time').innerText = `${m}:${s}`;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function retryCurrentLevel() {
+            document.getElementById('win-modal').classList.add('hidden');
+            totalMatched = totalMatched - matchedInRound;
+            initRound();
+            startTimer();
         }
 
         function startTimer() {
@@ -511,90 +665,42 @@
             }, 1000);
         }
 
-        function flipCard(cardElement) {
-            if (isLocked) return;
-            if (cardElement.classList.contains('is-flipped')) return;
-
-            cardElement.classList.add('is-flipped');
-            flippedCards.push(cardElement);
-
-            if (flippedCards.length === 2) {
-                moves++;
-                updateUI();
-                checkForMatch();
-            }
-        }
-
-        function checkForMatch() {
-            const card1 = flippedCards[0];
-            const card2 = flippedCards[1];
-            
-            const isMatch = card1.dataset.id === card2.dataset.id;
-
-            if (isMatch) {
-                isLocked = true;
-                triggerVibrate([40, 40]); // Rung nhẹ kép báo hiệu ghép đôi đúng
-                setTimeout(() => {
-                    card1.classList.add('matched', 'pop');
-                    card2.classList.add('matched', 'pop');
-                    matchedInRound++;
-                    totalMatched++;
-                    isLocked = false;
-                    updateUI(); 
-                    
-                    // Nếu đã tìm đúng cả 4 bộ của vòng hiện tại
-                    if (matchedInRound === ROUND_MATCHES) {
-                        if (currentRound < 3) {
-                            isLocked = true;
-                            setTimeout(() => {
-                                let txtNextLevel = currentRound === 1 ? "Level 2 (Vừa)" : "Level 3 (Khó)";
-                                showToast(`🎉 Xuất sắc! Vượt qua Level ${currentRound}. Bắt đầu ${txtNextLevel}!`, 'success');
-                                currentRound++;
-                                initRound();
-                            }, 1000);
-                        } else {
-                            setTimeout(() => gameOver(true), 600); 
-                        }
-                    }
-                }, 400);
-                flippedCards = [];
-            } else {
-                isLocked = true;
-                triggerVibrate(80); // Rung đơn báo lật thẻ sai
-                setTimeout(() => {
-                    card1.classList.add('wiggle');
-                    card2.classList.add('wiggle');
-                    
-                    setTimeout(() => {
-                        card1.classList.remove('is-flipped', 'wiggle');
-                        card2.classList.remove('is-flipped', 'wiggle');
-                        flippedCards = [];
-                        isLocked = false;
-                    }, 400);
-                }, 900);
-            }
-        }
-
         function updateUI() {
-            let txtLabel = "Level 1/3";
-            if (currentRound === 2) txtLabel = "Level 2/3";
-            else if (currentRound === 3) txtLabel = "Level 3/3";
+            let txtLabel = "Vòng 1/3";
+            if (currentRound === 2) txtLabel = "Vòng 2/3";
+            else if (currentRound === 3) txtLabel = "Vòng 3/3";
 
             document.getElementById('level-indicator').innerText = txtLabel;
             document.getElementById('matches').innerText = `${totalMatched}/${TOTAL_GAME_MATCHES}`;
-            document.getElementById('moves').innerText = moves;
+            
+            // Cập nhật tim kẹo dẻo
+            const heartsContainer = document.getElementById('heart-icons');
+            let heartsStr = "";
+            for (let i = 0; i < MAX_LIVES; i++) {
+                if (i < playerLives) {
+                    heartsStr += "❤️";
+                } else {
+                    heartsStr += "🖤"; 
+                }
+            }
+            heartsContainer.innerText = heartsStr;
+
+            const livesIndicator = document.getElementById('lives-indicator');
+            if (playerLives === 1) {
+                livesIndicator.classList.add('bg-rose-50', 'animate-pulse');
+            } else {
+                livesIndicator.classList.remove('bg-rose-50', 'animate-pulse');
+            }
             
             const m = Math.floor(seconds / 60).toString().padStart(2, '0');
             const s = (seconds % 60).toString().padStart(2, '0');
             const timeEl = document.getElementById('time');
-            
             timeEl.innerText = `${m}:${s}`;
             
-            // Cảnh báo thời gian khẩn cấp (15 giây cuối)
             if (seconds <= 15 && seconds > 0) {
-                timeEl.parentElement.classList.add('animate-pulse', '!bg-red-100', '!text-red-600', '!border-red-300');
+                timeEl.parentElement.classList.add('animate-pulse', '!bg-rose-100', '!text-rose-500', '!border-rose-300');
             } else {
-                timeEl.parentElement.classList.remove('animate-pulse', '!bg-red-100', '!text-red-600', '!border-red-300');
+                timeEl.parentElement.classList.remove('animate-pulse', '!bg-rose-100', '!text-rose-500', '!border-rose-300');
             }
         }
 
@@ -606,23 +712,27 @@
             const title = document.getElementById('modal-title');
             const desc = document.getElementById('modal-desc');
             const emoji = document.getElementById('modal-emoji');
+            const actionBtn = document.getElementById('modal-action-btn');
             
+            actionBtn.innerText = "🍬 Thử Lượt Chơi Mới";
+            actionBtn.onclick = () => restartGame();
+
             if (isWin) {
-                triggerVibrate([100, 50, 100, 50, 200]); // Rung haptic liên hồi ăn mừng
-                title.innerText = "Tuyệt Vời!";
-                title.className = "text-2xl md:text-4xl font-black text-green-500 mt-4 md:mt-6 mb-1 md:mb-4";
-                desc.innerText = `Chúc mừng bạn đã hoàn thành xuất sắc cả 3 cấp độ toán đa thức!`;
+                triggerVibrate([100, 50, 100, 50, 200]);
+                title.innerText = "Chiến Thắng!";
+                title.className = "text-2xl md:text-3xl font-black text-emerald-400 mt-6 mb-1";
+                desc.innerText = `Bé thật cừ khôi! Đã giải mã xuất sắc toàn bộ 12 nhóm đa thức rồi nhé!`;
                 emoji.innerText = "🏆";
                 createConfetti();
             } else {
-                title.innerText = "Hết Giờ Rồi!";
-                title.className = "text-2xl md:text-4xl font-black text-red-500 mt-4 md:mt-6 mb-1 md:mb-4";
-                desc.innerText = "Thời gian đã kết thúc mất rồi, chơi lại để rèn luyện tốc độ nhé!";
+                title.innerText = "Hết Giờ Mất Rồi!";
+                title.className = "text-2xl md:text-3xl font-black text-rose-400 mt-6 mb-1";
+                desc.innerText = "Bánh ngọt ngọt ngào đã chảy hết, hãy nhanh chân thử lại nha!";
                 emoji.innerText = "⏰";
             }
             
             document.getElementById('final-matches').innerText = `${totalMatched}/${TOTAL_GAME_MATCHES}`;
-            document.getElementById('final-moves').innerText = moves;
+            document.getElementById('final-errors').innerText = totalErrors;
             
             const m = Math.floor(Math.max(seconds, 0) / 60).toString().padStart(2, '0');
             const s = (Math.max(seconds, 0) % 60).toString().padStart(2, '0');
@@ -635,6 +745,7 @@
             document.getElementById('win-modal').classList.add('hidden');
             currentRound = 1;
             totalMatched = 0;
+            totalErrors = 0;
             seconds = TIME_LIMIT;
 
             initRound();
@@ -642,7 +753,7 @@
         }
 
         function createConfetti() {
-            const colors = ['#fce18a', '#ff726d', '#b48def', '#f4306d', '#22c55e', '#06b6d4'];
+            const colors = ['#ffd6e0', '#ffefd5', '#e8f8f5', '#f3e8ff', '#ffeb3b', '#4caf50'];
             for (let i = 0; i < 75; i++) {
                 const confetti = document.createElement('div');
                 confetti.classList.add('confetti');
